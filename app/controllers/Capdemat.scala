@@ -74,12 +74,15 @@ object Capdemat extends Controller {
 
   def rawData = Action {
     Async {
-      Cache
-        .getOrElse("capdemat-json", 60 * 60)(
-          WS.url("https://demarches-plaisirenligne.mairie24.fr/service/statistics").withTimeout(5 * 60000).get.map(_.body)
+      Cache.getOrElse("capdemat-json", 60 * 60)(
+        WS.url("https://demarches-plaisirenligne.mairie24.fr/service/statistics").withTimeout(5 * 60000).get.map(_.body)
       ).map(data =>
         Ok(data).withHeaders(HeaderNames.CONTENT_TYPE -> ContentTypes.JSON))
     }
+  }
+
+  def spermatozoids = Action {
+    Ok(views.html.widgets.capdemat.unbornChidren())
   }
 
 }

@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" xmlns="http://www.w3.org/1999/html" />
+    <script src="@routes.Assets.at("javascripts/lib/jquery.min.js")" type="text/javascript"></script>
+    <script type="text/javascript" src="@routes.Assets.at("javascripts/d3/d3.js")"></script>
+    <script type="text/javascript" src="@routes.Assets.at("javascripts/d3/d3.layout.cloud.js")"></script>
+    <style>
+        body {
+            background: #000;
+        }
+
+        ellipse {
+            fill: #fff;
+        }
+
+        path {
+            fill: none;
+            stroke: #fff;
+            stroke-linecap: round;
+        }
+
+        .mid {
+            stroke-width: 4px;
+        }
+
+        .tail {
+            stroke-width: 2px;
+        }
+
+        ellipse.color0 { fill: #00A762 }
+        ellipse.color1 { fill: #F9AF36 }
+        ellipse.color2 { fill: #DF5C28 }
+        ellipse.color3 { fill: white }
+        .color0 { stroke: #00A762 }
+        .color1 { stroke: #F9AF36 }
+        .color2 { stroke: #DF5C28 }
+        .color3 { stroke: white }
+    </style>
+</head>
+<body>
+    <script type="text/javascript">
+
+    var w = 960,
+            h = 500,
+            n = 20,
+            m = 12,
+            degrees = 180 / Math.PI;
+
+    var spermatozoa = d3.range(n).map(function() {
+        var x = Math.random() * w, y = Math.random() * h;
+        return {
+            vx: Math.random() * 2 - 1,
+            vy: Math.random() * 2 - 1,
+            path: d3.range(m).map(function() { return [x, y]; }),
+            count: 0,
+            city: Math.round(Math.random() * 4 - 1)
+        };
+    });
+
+    var svg = d3.select("body").append("svg:svg")
+            .attr("width", w)
+            .attr("height", h);
+
+    var g = svg.selectAll("g")
+            .data(spermatozoa)
+            .enter().append("svg:g");
+
+    var head = g.append("svg:ellipse")
+            .attr("rx", 6.5)
+            .attr("class", function(d) {return "color"+d.city; })
+            .attr("ry", 4);
+
+    g.append("svg:path")
+            .attr("class", function(d) {return "mid color"+d.city; })
+            .map(function(d) { return d.path.slice(0, 3); })
+
+
+    g.append("svg:path")
+            .attr("class", function(d) {return "tail color"+d.city; })
+            .map(function(d) { return d.path; })
+
+
+    var tail = g.selectAll("path");
+
+    d3.timer(function() {
+        for (var i = -1; ++i < n;) {
+            var spermatozoon = spermatozoa[i],
+                    path = spermatozoon.path,
+                    dx = spermatozoon.vx,
+                    dy = spermatozoon.vy,
+                    x = path[0][0] += dx,
+                    y = path[0][1] += dy,
+                    speed = Math.sqrt(dx * dx + dy * dy),
+                    count = speed * 10,
+                    k1 = -5 - speed / 3;
+
+            // Bounce off the walls.
+            if (x < 0 || x > w) spermatozoon.vx *= -1;
+            if (y < 0 || y > h) spermatozoon.vy *= -1;
+
+            // Swim!
+            for (var j = 0; ++j < m;) {
+                var vx = x - path[j][0],
+                        vy = y - path[j][1],
+                        k2 = Math.sin(((spermatozoon.count += count) + j * 3) / 300) / speed;
+                path[j][0] = (x += dx / speed * k1) - dy * k2;
+                path[j][1] = (y += dy / speed * k1) + dx * k2;
+                speed = Math.sqrt((dx = vx) * dx + (dy = vy) * dy);
+            }
+        }
+
+        head.attr("transform", function(d) {
+            return "translate(" + d.path[0] + ")rotate(" + Math.atan2(d.vy, d.vx) * degrees + ")";
+        });
+
+        tail.attr("d", function(d) {
+            return "M" + d.join("L");
+        });
+    });
+
+    </script>
+</body>
+</html>

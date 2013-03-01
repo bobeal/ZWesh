@@ -6,6 +6,7 @@
 GET     /                           controllers.Application.index
 GET     /capdemat/dashboard         controllers.Capdemat.dashboard
 GET     /capdemat/raw               controllers.Capdemat.rawData
+GET     /capdemat/spermatozoids     controllers.Capdemat.spermatozoids
 
 # Redmine
 
