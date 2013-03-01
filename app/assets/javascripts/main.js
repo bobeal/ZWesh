@@ -24,7 +24,7 @@ require(['jquery', 'gridster'], function($) {
       return {
         init: function() {
           $.ajax("/capdemat/dashboard").then(function(html) {
-            widget = gridster.add_widget("<li></li>", 3, 4);
+            widget = gridster.add_widget("<li></li>", 3, 5);
             widget.html(html);
           });
         },
