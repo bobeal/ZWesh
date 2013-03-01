@@ -21,9 +21,7 @@
             </li>
         </ol>
     }
-    <ul class="widget-list">
-        <li>
-            <h2>@((json \ "widget-title").as[String])</h2>
-            @{ (json \ "cities").as[List[JsValue]].map(renderCity) }
-        </li>
-    </ul>
+    <li class="widget-list">
+        <h2>@((json \ "widget-title").as[String])</h2>
+        @{ (json \ "cities").as[List[JsValue]].map(renderCity) }
+    </li>

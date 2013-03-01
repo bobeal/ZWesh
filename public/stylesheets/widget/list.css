@@ -13,13 +13,14 @@ ul, ol {
     list-style: none outside none;
 }
 
-ul.widget-list {
+ul li.widget-list {
     background-color: #12B0C5;
     text-align: center;
     padding: 1em;
+    height: 100%;
 }
 
-ul.widget-list ol {
+ul li.widget-list ol {
     margin-bottom: 1em;
     text-align: left;
 }
