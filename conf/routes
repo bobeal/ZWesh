@@ -13,7 +13,7 @@ GET     /revisions                  controllers.Redmine.revisions
 GET     /analysis/cbt               controllers.NaiveDataAnalysis.commitsByTickets
 
 # Twitter
-GET     /twitter/auth               controllers.Twitter.authenticate
+GET     /twitter/auth               controllers.Application.authenticate
 GET     /twitter/list/:owner/:list  controllers.Twitter.list(owner, list)
 GET     /twitter/hashtag/:hashtag   controllers.Twitter.hashtag(hashtag)
 GET     /twitter/hashtags/:hashtags controllers.Twitter.hashtags(hashtags)

@@ -6,7 +6,6 @@ import play.api.mvc._
 
 import play.api.libs.ws._
 import play.api.libs.oauth._
-import play.api.Play.current
 import play.api.libs.json._
 import play.api.libs.functional.syntax._
 import play.api.libs.concurrent.Execution.Implicits._
@@ -30,13 +29,13 @@ object Twitter extends Controller {
   }
 
   private def countTweetsByUrl(url: String, extractData: JsValue => JsValue = {json => json}) = Action { implicit request =>
-    sessionTokenPair.map(implicit token =>
+    TwitterOAuth.checkToken.map(implicit token =>
       Async {
         println(url)
         call(url).get.map(result =>
           Ok(Json.toJson(Map("count" -> countTweetsToday(extractData(result.json))))))
       }
-    ).getOrElse(Redirect(routes.Twitter.authenticate()))
+    ).getOrElse(Forbidden)
   }
 
   private def countTweetsToday(json: JsValue) = {
@@ -44,47 +43,15 @@ object Twitter extends Controller {
     json.as[List[Tweet]].count(t => t.date.isAfter(limit))
   }
 
-
-  // -- Twitter Oauth
-
-  lazy val conf = Play.configuration.getConfig("twitter").getOrElse(throw new RuntimeException("Missing config for Twitter"))
-  lazy val KEY = ConsumerKey(conf.getString("clientId").get, conf.getString("clientSecret").get)
-  lazy val TWITTER = OAuth(ServiceInfo(
-    "https://api.twitter.com/oauth/request_token",
-    "https://api.twitter.com/oauth/access_token",
-    "https://api.twitter.com/oauth/authorize", KEY))
-
-  def authenticate = Action { implicit request =>
-    request.queryString.get("oauth_verifier").flatMap(_.headOption).map { verifier =>
-      val tokenPair = sessionTokenPair(request).get
-      TWITTER.retrieveAccessToken(tokenPair, verifier) match {
-        case Right(t) => Redirect(request.uri).withSession("token" -> t.token, "secret" -> t.secret)
-        case Left(e) => throw e
-      }
-    }.getOrElse(
-      TWITTER.retrieveRequestToken(routes.Twitter.authenticate.absoluteURL()) match {
-        case Right(t) => Redirect(TWITTER.redirectUrl(t.token)).withSession("token" -> t.token, "secret" -> t.secret)
-        case Left(e) => throw e
-      })
-  }
-
-  private def sessionTokenPair(implicit request: RequestHeader): Option[RequestToken] = {
-    for {
-      token <- request.session.get("token")
-      secret <- request.session.get("secret")
-    } yield {
-      RequestToken(token, secret)
-    }
-  }
+  // -- Twitter Oauth WS
 
   private def call(url: String)(implicit token: RequestToken): WSRequestHolder = {
-    WS.url(url).sign(OAuthCalculator(Twitter.KEY, token))
+    WS.url(url).sign(OAuthCalculator(TwitterOAuth.KEY, token))
   }
-
 
   // --- Tweet parsing
 
-  case class Tweet(date: DateTime, id: Int, text: String, name: String, screenName: String)
+  case class Tweet(date: DateTime, id: Int)
 
   val twitterDateReader = new Reads[org.joda.time.DateTime] {
     def reads(json: JsValue): JsResult[DateTime] = {
@@ -102,10 +69,7 @@ object Twitter extends Controller {
 
   implicit val tweetReader = (
     (__ \ "created_at").read[DateTime](twitterDateReader) and
-      (__ \ "id").read[Int] and
-      (__ \ "text").read[String] and
-      (__ \ "user" \ "name").read[String] and
-      (__ \ "user" \ "screen_name").read[String]
-    )(Tweet.apply _)
+    (__ \ "id").read[Int]
+  )(Tweet.apply _)
 
 }
