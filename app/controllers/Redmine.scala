@@ -31,12 +31,7 @@ object Redmine extends Controller {
   }
 
   def cloud = Action {
-    Async {
-       RedmineService.getIssuesDescriptionWordNumber.map( response =>
-        //Ok(Json.toJson(response))
-        Ok(views.html.redmine.cloud())
-      )
-    }
+    Ok(views.html.redmine.cloud())
   }
 
 
