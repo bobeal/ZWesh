@@ -13,7 +13,6 @@ object Application extends Controller with TwitterOAuthController {
 }
 
 trait TwitterOAuthController extends Controller {
-
   import TwitterOAuth._
 
   def authenticate = Action { implicit request =>

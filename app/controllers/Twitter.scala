@@ -31,7 +31,6 @@ object Twitter extends Controller {
   private def countTweetsByUrl(url: String, extractData: JsValue => JsValue = {json => json}) = Action { implicit request =>
     TwitterOAuth.checkToken.map(implicit token =>
       Async {
-        println(url)
         call(url).get.map(result =>
           Ok(Json.toJson(Map("count" -> countTweetsToday(extractData(result.json))))))
       }
