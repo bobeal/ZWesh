@@ -3,11 +3,15 @@ require.config({
 , paths: { app: '../app'
          , jquery: 'jquery.min'
          , gridster: 'jquery.gridster.min'
+         , d3: 'd3.v3.min'
          }
-, shim: { 'gridster': ['jquery'] }
+, shim: { 'gridster': ['jquery']
+        , 'd3': { exports: 'd3' }
+        , 'd3.layout.cloud': ['d3']
+        }
 })
 
-require(['jquery', 'gridster'], function($) {
+require(['jquery', 'app/charts/redmine-cloud', 'gridster'], function($, redmine) {
 
   $('.gridster ul').gridster({
     widget_margins: [10, 10]
@@ -30,14 +34,34 @@ require(['jquery', 'gridster'], function($) {
         },
         update: function() {
           $.ajax("/capdemat/dashboard").then(function(html) {
-            widget.html(html);
+            if (widget) {
+              widget.html(html)
+            }
           });
         }
       }
     })();
 
+    var redmineWidget = (function() {
+      var widget
+      return {
+        init: function() {
+          redmine.done(function(div) {
+            widget = gridster.add_widget('<li></li>', 3, 3)
+            widget.html(div)
+          })
+        },
+        update: function() {
+          redmine.done(function(div) {
+            widget.html(div)
+          })
+        }
+      }
+    })()
+
     // register widgets
     widgets.push(capdematWidget);
+    widgets.push(redmineWidget)
 
     function initWidgets() {
       widgets.forEach(function(widget) { widget.init(); });

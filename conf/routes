@@ -12,7 +12,6 @@ GET     /capdemat/spermatozoids     controllers.Capdemat.spermatozoids
 
 GET     /issues                     controllers.Redmine.issues
 GET     /revisions                  controllers.Redmine.revisions
-GET     /cloud                      controllers.Redmine.cloud
 GET     /getDescWordNumber          controllers.Redmine.getDescWordNumber
 
 GET     /analysis/cbt               controllers.NaiveDataAnalysis.commitsByTickets
