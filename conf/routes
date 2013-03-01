@@ -9,6 +9,8 @@ GET     /                           controllers.Application.index
 
 GET     /issues                     controllers.Redmine.issues
 GET     /revisions                  controllers.Redmine.revisions
+GET     /cloud                      controllers.Redmine.cloud
+GET     /getDescWordNumber          controllers.Redmine.getDescWordNumber
 
 GET     /analysis/cbt               controllers.NaiveDataAnalysis.commitsByTickets
 

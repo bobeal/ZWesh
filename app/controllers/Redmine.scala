@@ -8,6 +8,9 @@ import scala.concurrent.duration._
 import ExecutionContext.Implicits.global
 
 import services._
+import play.api.libs.json._
+import play.api.libs.functional.syntax._
+import models.redmine.WordNumberHelper._
 
 object Redmine extends Controller {
 
@@ -24,6 +27,24 @@ object Redmine extends Controller {
       RedmineService.getRevisions.map{ response =>
         Ok(response.xml)
       }
+    }
+  }
+
+  def cloud = Action {
+    Async {
+       RedmineService.getIssuesDescriptionWordNumber.map( response =>
+        //Ok(Json.toJson(response))
+        Ok(views.html.redmine.cloud())
+      )
+    }
+  }
+
+
+  def getDescWordNumber = Action {
+    Async {
+       RedmineService.getIssuesDescriptionWordNumber.map( response =>
+       Ok(Json.toJson(response))
+      )
     }
   }
 }
