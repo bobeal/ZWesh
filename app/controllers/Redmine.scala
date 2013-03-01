@@ -18,4 +18,12 @@ object Redmine extends Controller {
         }
       }
   }
+
+  def revisions = Action {
+    Async {
+      RedmineService.getRevisions.map{ response =>
+        Ok(response.xml)
+      }
+    }
+  }
 }

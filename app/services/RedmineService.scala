@@ -12,4 +12,8 @@ object RedmineService {
   def getIssues = {
       WS.url("https://code.zenexity.com/issues.json?limit=100&key=" + Play.current.configuration.getString("api.key").getOrElse("")).get()
   }
+
+  def getRevisions = {
+    WS.url("https://code.zenexity.com/projects/capdemat/repository/revisions.atom?key=" + Play.current.configuration.getString("rss.key").getOrElse("")).get()
+  }
 }
