@@ -16,27 +16,23 @@ object NaiveDataAnalysis extends Controller {
     (__ \ "nbCommits").write[Int]
   )({t: (String, Int) => t})
 
+  implicit val tupleStringStringWrites = (
+    (__ \ "commit").write[String] and
+    (__ \ "message").write[String]
+  )({t: (String, String) => t})
+
   def commitsByTickets = Action {
     Async {
       RedmineService.getIssues.flatMap{ res =>
         res.status match {
           case 200 =>
-            RedmineService.getRevisions.map{ revisions =>
-              revisions.status match {
-                case 200 =>
-                  val CommitTitleRegex = """<.*?>.*? ([a-z0-9]{8}): (.*?)</.*?>""".r
-                  val issuesIds = (res.json \ "issues").as[List[JsValue]].map( issue =>
-                    (issue \ "id").toString
-                  )
-                  val commits:List[(String, String)] = (revisions.xml \\ "title").map{ title =>
-                    for(CommitTitleRegex(hash, message) <- CommitTitleRegex findFirstIn title.toString)
-                    yield ((hash, message))
-                  }.toList.flatten
-                  issuesIds.map{ id =>
-                    val c = commits.filter(_._2.contains(id))
-                    (id, c.size)
-                  }
-                case _ => Nil
+            val issuesIds = (res.json \ "issues").as[List[JsValue]].map( issue =>
+              (issue \ "id").toString
+            )
+            findCommits.map{ commits =>
+              issuesIds.map{ id =>
+                val c = commits.filter(_._2.contains(id))
+                (id, c.size)
               }
             }
           case _ => Future(Nil)
@@ -47,9 +43,29 @@ object NaiveDataAnalysis extends Controller {
     }
   }
 
-  def commitsWithoutTicketNumber = TODO
+  def commitsWithoutTicketNumber = Action {
+    Async {
+      findCommits.map( commits =>
+        Ok(Json.toJson(commits.filterNot(_._2.contains("#"))))
+      )
+    }
+  }
 
   def commitsWithMoreThanOneTicketNumber = TODO
+
+  private def findCommits: Future[List[(String, String)]] = {
+    RedmineService.getRevisions.map{ revisions =>
+      revisions.status match {
+        case 200 =>
+          val CommitTitleRegex = """<.*?>.*? ([a-z0-9]{8}): (.*?)</.*?>""".r
+          (revisions.xml \\ "title").map{ title =>
+            for(CommitTitleRegex(hash, message) <- CommitTitleRegex findFirstIn title.toString)
+              yield ((hash, message))
+          }.toList.flatten
+        case _ => Nil
+      }
+    }
+  }
 
 }
 
