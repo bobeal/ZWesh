@@ -2,6 +2,9 @@ package controllers
 
 import play.api._
 import play.api.mvc._
+import play.api.libs.ws.WS
+import play.api.libs.json._
+import play.api.libs.concurrent.Execution.Implicits._
 
 import play.api.libs.json._
 import play.api.libs.ws._
@@ -10,28 +13,34 @@ import play.api.Play.current
 import play.api.http._
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
 object Capdemat extends Controller {
+  lazy val LOGGER = play.api.Logger
 
   def index = TODO
 
   def dashboard = Action {
+    Async {
+        LOGGER.info("Sent request to mairie24")
+        WS.url("http://zwesh.loc:9000/capdemat/raw").get().map { response =>
+            LOGGER.info("Received response from mairie24")
+            val json = response.json
+            Ok(views.html.widgets.capdemat.capdematList(mapDashboard(json)))
+        }
+    }
+  }
+
+  private def mapDashboard(json: JsValue): JsValue = {
     import play.api.libs.json._
-    Ok(views.html.widgets.capdemat.capdematList(Json.obj(
+
+    val cities: List[JsValue] = json.asOpt[JsObject].map(_.fieldSet.toList.map { case (cityName, cityData) =>
+        Json.obj("name" -> cityName,
+            "userCount" -> (cityData \ "nbOfIndividuals").as[Long],
+            "askCount" -> (cityData \ "nbOfRequests").as[Long],
+            "paymentCount" -> (cityData \ "nbOfPayments").as[Long])
+    }).getOrElse(List())
+    Json.obj(
         "widget-title" -> "CapDemat",
-        "cities" -> JsArray(Seq(
-            Json.obj("name" -> "Pessac",
-                    "userCount" -> 8948,
-                    "askCount" -> 30929,
-                    "paymentCount" -> 3727),
-            Json.obj("name" -> "Beaucouzé",
-                    "userCount" -> 609,
-                    "askCount" -> 2861,
-                    "paymentCount" -> 2156),
-            Json.obj("name" -> "Roubaix",
-                    "userCount" -> 10649,
-                    "askCount" -> 31196,
-                    "paymentCount" -> 0)
-        ))
-    )))
+        "cities" -> JsArray(cities.toSeq)
+    )
   }
 
   def rawData = Action {
