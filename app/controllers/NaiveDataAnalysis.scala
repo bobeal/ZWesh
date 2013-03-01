@@ -51,7 +51,13 @@ object NaiveDataAnalysis extends Controller {
     }
   }
 
-  def commitsWithMoreThanOneTicketNumber = TODO
+  def commitsWithMoreThanOneTicketNumber = Action {
+    Async {
+      findCommits.map( commits =>
+        Ok(Json.toJson(commits.filter(_._2.count(_ == '#') > 1)))
+      )
+    }
+  }
 
   private def findCommits: Future[List[(String, String)]] = {
     RedmineService.getRevisions.map{ revisions =>

@@ -14,6 +14,7 @@ GET     /getDescWordNumber          controllers.Redmine.getDescWordNumber
 
 GET     /analysis/cbt               controllers.NaiveDataAnalysis.commitsByTickets
 GET     /analysis/commitNoTicket    controllers.NaiveDataAnalysis.commitsWithoutTicketNumber
+GET     /analysis/commitMoreOneTicket    controllers.NaiveDataAnalysis.commitsWithMoreThanOneTicketNumber
 
 # Twitter
 GET     /twitter/auth               controllers.Application.authenticate
