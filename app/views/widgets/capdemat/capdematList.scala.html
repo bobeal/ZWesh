@@ -1,0 +1,29 @@
+@(json: play.api.libs.json.JsValue)
+
+@import play.api.libs.json._
+
+    <link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/widget/list.css")">
+
+    @renderCity(city: JsValue) = {
+        <ol>
+            <h3>@{ (city \ "name").as[String] }</h3>
+            <li>
+                <label>Nombre de comptes usager</label>
+                <span>@{ (city \ "userCount").as[Long] }</span>
+            </li>
+            <li>
+                <label>Nombre de demandes</label>
+                <span>@{ (city \ "askCount").as[Long] }</span>
+            </li>
+            <li>
+                <label>Nombre de paiements</label>
+                <span>@{ (city \ "paymentCount").as[Long] }</span>
+            </li>
+        </ol>
+    }
+    <ul class="widget-list">
+        <li>
+            <h2>@((json \ "widget-title").as[String])</h2>
+            @{ (json \ "cities").as[List[JsValue]].map(renderCity) }
+        </li>
+    </ul>
