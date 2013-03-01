@@ -1,0 +1,9 @@
+// Helper for prototyping
+@red: #f00;
+.proto-border(@color: @red) {
+  border: 1px solid lighten(@color, 20%);
+}
+
+.gridster li {
+  .proto-border();
+}
